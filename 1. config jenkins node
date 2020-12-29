@@ -1,0 +1,9 @@
+1. How to connect a new linux agent node?
+
+> In manage jenkins/manage credentials memu, create your agent login credential,
+  for example via usrname and private key;
+# in agent , create new ssh key via ssh-keygen ;
+# in agent , cat id_rsa.pub > authorized_keys ;
+# in agent, chmod 700 authorized_keys;
+# in jenkins, choose private key method and attach id_rsa's content in it;
+
