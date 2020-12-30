@@ -1,0 +1,9 @@
+1. linux上给网口新增/删除 ip？
+#ip addr add 192.168.1.100/24 dev eth0
+#ip addr del 192.168.1.100/24 dev eth0
+
+2. 停止与激活网络设备
+#ip link set dev eth1 down
+#ip link set dev eth1 up
+
+3. 
