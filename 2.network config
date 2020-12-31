@@ -39,4 +39,8 @@ pipework本质是一个shell脚本实现，相对docker自身比较薄弱的网�
 7. 查看网桥端口配置信息
 #ovs-vsctl list port s1 s1-eth1 
 
+8. 创建虚拟vlan子网口
+#ip link add link eth0 name eth0.10 type vlan id 10
+#ip link set dev eth0.10 up
+
 
