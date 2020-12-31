@@ -1,0 +1,34 @@
+1. 安装依赖包
+# yum install gcc make python-devel openssl-devel kernel-devel graphviz \
+kernel-debug-devel autoconf automake rpm-build redhat-rpm-config \
+libtoolt
+
+2. 安装前准备
+需要root用户下执行
+#mkdir -p ~/rpmbuild/SOURCES
+#wget http://openvswitch.org/releases/openvswitch-2.3.1.tar.gz
+#cp openvswitch-2.3.1.tar.gz ~/rpmbuild/SOURCES/
+#tar xfz openvswitch-2.3.1.tar.gz
+#sed 's/openvswitch-kmod, //g' openvswitch-2.3.1/rhel/openvswitch.spec > openvswitch-2.3.1/rhel/openvswitch_no_kmod.spec
+
+3. 安装
+#rpmbuild -bb --nocheck ~/openvswitch-2.3.1/rhel/openvswitch_no_kmod.spec
+#ls -l ~/rpmbuild/RPMS/x86_64/
+#yum localinstall ~/rpmbuild/RPMS/x86_64/openvswitch-2.3.1-1.x86_64.rpm
+
+4. 安装后设置
+# mkdir -p /etc/openvswitch
+# ovsdb-tool create /etc/openvswitch/conf.db  vswitchd/vswitch.ovsschema
+
+5. 安装policy
+#yum install policycoreutils-python.x86_64 0:2.2.5-11.el7
+#restorecon -Rv /etc/openvswitch
+
+6. 启动验证OVS
+
+#systemctl start openvswitch.service
+#systemctl -l status openvswitch.service
+
+[root@sz-cat-wall01-60 openvswitch-2.3.1]# ovs-vsctl show
+fdef3408-dfed-41f4-8c97-f489475dceb5
+    ovs_version: "2.3.1"
