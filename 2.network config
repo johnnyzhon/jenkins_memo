@@ -1,3 +1,15 @@
+测试机网络规划：
+
+1.  测试机以容器的形式部署在一台或多台服务器上。
+2.  测试机端口接入 ovs switch
+3.  ovs上给测试机划分不同的vlan, 测试机ip网段 192.168.1.*
+4.  宿主机eth0端口接入ovs， 注意接入后eth0 ip会失效，请在服务器本地登录，并记录下当前的route表
+5.  然后把 eth0的ip地址配给 ovs internal port 
+6.  然后给ovs internal port配置 eth0上面的路由
+
+
+
+Q&A:
 1. linux上给网口新增/删除 ip？
 #ip addr add 192.168.1.100/24 dev eth0
 #ip addr del 192.168.1.100/24 dev eth0
@@ -6,4 +18,25 @@
 #ip link set dev eth1 down
 #ip link set dev eth1 up
 
-3. 
+3. 创建ovs bridge
+# ovs-vsctl add-br ovs0
+
+4. 给ovs br 添加/删除 port
+# ovs-vsctl add-port ovs0 ens*
+# ovs-vsctl del-port ovs0 ens*
+
+5. 给port口设置vlan
+# pipework ovs0 test1 192.168.1.11/24 @10  \\ ovs0 网桥， test1 虚机或容器 ， vlan :10
+
+pipework本质是一个shell脚本实现，相对docker自身比较薄弱的网络配置处理方式，其可以方便地对docker网络进行配置。
+[root@localhost ~]# cd /usr/local/
+[root@localhost local]# git clone https://github.com/jpetazzo/pipework
+[root@localhost local]# ln -s /usr/local/pipework/pipework /usr/local/bin/ 
+
+6. 查看网桥配置信息
+# ovs-vsctl list bridge s1
+
+7. 查看网桥端口配置信息
+#ovs-vsctl list port s1 s1-eth1 
+
+
