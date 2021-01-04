@@ -3,9 +3,11 @@ FROM python:3.6.8-alpine
  
 # 作者描述信息
 MAINTAINER  zhongqiang <smone123@126.com>
- 
+
+ENV JAVA_HOME /usr/java/jdk
+
 # 替换阿里云的源
-# 更新源、安装openssh/tzdata/git/curl/ca/bash/jre, 并且同步时间
+# 更新源、安装openssh/tzdata/git/curl/ca/bash, 并且同步时间
 RUN echo "http://mirrors.aliyun.com/alpine/latest-stable/main/" > /etc/apk/repositories && \
     echo "http://mirrors.aliyun.com/alpine/latest-stable/community/" >> /etc/apk/repositories && \
     apk update && \
@@ -22,10 +24,12 @@ RUN echo "http://mirrors.aliyun.com/alpine/latest-stable/main/" > /etc/apk/repos
     echo "root:admin" | chpasswd && \
     git config --global user.name telecom && \
     git config --global user.email smone123@126.com && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* 
 
+# install python libs,RF
+RUN pip --no-cache-dir install robotframework requests openpyxl selenium robotframework-appiumlibrary Appium-Python-Client
 
-# 创建新用户jenkins
+# create new user jenkins
 RUN addgroup -S -g 1004 jenkins && \
     adduser -S -u 1004 -h /home/jenkins -s /bin/ash -G jenkins jenkins && \
     echo "jenkins:jenkins" | chpasswd && \
@@ -33,21 +37,25 @@ RUN addgroup -S -g 1004 jenkins && \
     chmod 700 /home/jenkins/.ssh && \
     chown -R jenkins:jenkins /home/jenkins/.ssh
 
+# install jre dependent libs and config java 
+RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
+    wget -q https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-2.29-r0.apk && \
+    apk add glibc-2.29-r0.apk && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p /usr/java/jdk && \
+    chmod -R 755 /usr/java/jdk && \
+    echo "export PATH=${PATH}:${JAVA_HOME}/bin" >>/etc/profile
+
+# add jre package
+ADD jre8.tar.gz /usr/java/jdk/
+
 # 设置免密登录
 COPY --chown=jenkins:jenkins --chmod=600 authorized_keys /home/jenkins/.ssh/
 COPY --chown=jenkins:jenkins id_rsa* /home/jenkins/.ssh/
 
-# 安装jre
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-    wget -nv https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-2.29-r0.apk && \
-    apk add glibc-2.29-r0.apk
-ADD jre8.tar.gz /usr/java/jdk/
-ENV JAVA_HOME /usr/java/jdk
-ENV PATH ${PATH}:${JAVA_HOME}/bin
 
 # 开放22端口
 EXPOSE 22
-#USER jenkins
 WORKDIR /home/jenkins
  
 # 执行ssh启动命令
