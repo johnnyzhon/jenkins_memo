@@ -1,0 +1,12 @@
+Using gitlab as remote repo while create pipeline. 
+
+
+1. 配置SCM模式的pipeline
+
+> 在gitlab上面新建一个repo(eg：gw_pipeline.git)用于存放jenkinsfile;
+> jenkins中创建一个pipeline类型的job;
+> 选择 pipeline script from SCM ;
+
+
+
+2. 配置构建触发器
