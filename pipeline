@@ -6,7 +6,20 @@ Using gitlab as remote repo while create pipeline.
 > 在gitlab上面新建一个repo(eg：gw_pipeline.git)用于存放jenkinsfile;
 > jenkins中创建一个pipeline类型的job;
 > 选择 pipeline script from SCM ;
-
+> 配置repo url 和 credential ;
+>>  http 形式url , 创建 username和pwd形式的credential；\\gitlab的用户名密码
+>>  ssh 形式url , 创建 username 和 private key形式的credential ;
+>>>  创建username 和 private key形式的credential 的同时需要先 username登录gitlab并将ssh private key 对应的pub key 配置到gitlab ssh key中；
+> 配置branch build 指定该job使用的jenkinsfile的分支
+> 配置jenkinsfile脚本相对路径
 
 
 2. 配置构建触发器
+
+> 选择 "Build when a change is pushed to GitLab";
+> 按需要勾选一些配置项，一般要勾选"push event", comments 上填写在gitlab上输入的字符，然后在gitlab上输入配置的comments后可以触发构建；
+> 选择该构建项的高级选项，在高级选项中找到secret code ，生成code并手动复制保存
+> gitlab上找到构建触发repo( eg: autotest.git) ,进去该repo的setting，并找到webhook页面；
+> 在webhook界面上，填写url ( 配置第一项的时候看到的url)和 secret token( 配置第三项中生成的token);
+> 在webhook界面，勾选trigger 选项，比如(push event， comments)， 还可以设置触发pipeline的 分支；
+> webhook界面上设置完成后，可以测试看是否可以正常触发；
