@@ -12,21 +12,31 @@ agent_num=${1:-1}
 
 for index in `seq 1 $agent_num`
 do
-    echo "#create the ${index}th container."
-    agent_name=${agent_name}_$index
-    runNewContainer $agent_dir $agent_image $agent_name   
+    writelog "# Create the ${index}th container."
+    evalContainerPort $index
+    runNewContainer $agent_dir $agent_image $agent_name $index  
+    if [ $? -ne 0 ];then exit 1;fi
 
-    echo "#add a new nic to container ${agent_name}"
-    echo "##step1: get container pid"
-    pid=$(getContainerPid ${agent_name})
-
-    echo "##step2: create one veth pair"
-    evaluateContainerVethPair $pid $index
+    writelog "# Add additional nic to ${index}th container."
+    writelog "##Step1: get container pid"
+    getContainerPid ${agent_name}_${index}
+    if [ $? -ne 0 ];then exit 1;fi
+  
+    writelog "##Step2: create one veth pair"
+    evalContainerVethPair $pid $index
     createVethPair ${veth_pair[@]}
+    if [ $? -ne 0 ];then exit 1;fi
 
-    echo "##step3: create ovs bridge"
+    writelog "##Step3: create ovs bridge"
     createOVSbridge $ovsbr
+    if [ $? -ne 0 ];then exit 1;fi
 
-    echo "##step4: use veth pair connect container and ovs"
+    writelog "##Step4: connect container $pid with ovs $ovsbr"
     connectContainer2OVS $ovsbr $pid ${veth_pair[@]} 
+    if [ $? -ne 0 ];then exit 1;fi
+    
+    writelog "##Step5: set ${index}th container eth1's ip."
+    evalContainerCIDR $pid $index
+    configContainerVethNIC $pid ${veth_pair[1]} $eth1_cidr
+    if [ $? -ne 0 ];then exit 1;fi
 done
