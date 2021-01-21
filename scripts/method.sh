@@ -18,8 +18,8 @@ createVethPair(){
     local cmd="ip link add $1 type veth peer name $2"
     ip link list|grep -E "$1|$2" 1>/dev/null
     if [ $? -ne 0 ];then
+         $cmd
          writelog "create veth pair $*"
-         exec $cmd
     fi
 }
 
@@ -40,17 +40,19 @@ connectContainer2OVS(){
     local netns=$2
     local veth0=$3
     local veth1=$4
-    ovs-vsctl list-ports $ovs|grep -E "$veth0|$veth1" 1>/dev/null
+    ovs-vsctl list-ports $ovs|grep -E "${veth0}|${veth1}" 1>/dev/null
     if [ $? -ne 0 ];then
         writelog "plugin port $veth0 to $ovs"
         ovs-vsctl add-port $ovs $veth0
         ip link set $veth0 up
+        sleep 1s
     else
         writelog "container $netns already connect to ovs $ovs"
     fi
     ip netns list |grep $netns 1>/dev/null
     if [ $? -ne 0 ];then
         ln -s /proc/${netns}/ns/net /var/run/netns/$netns
+        sleep 2s
     fi
     ip netns exec $netns ip link list|grep -E "${veth1}|eth1" 1>/dev/null
     if [ $? -ne 0 ];then
@@ -69,7 +71,7 @@ configContainerVethNIC(){
         ip netns exec $netns ip link set dev $veth name eth1
         ip netns exec $netns ip addr add $cidr dev eth1 1>/dev/null
         ip netns exec $netns ip link set eth1 up
-        writelog "now, could see eth1 nic in container netns $netns after set eth1 up."
+        writelog "now, could see eth1 in container $netns."
     fi
 }
 
@@ -124,8 +126,8 @@ runNewContainer(){
     docker ps |grep ${agent_name} 1>/dev/null
     if [ $? -eq 0 ];then return 0;fi
     docker run -d --name ${agent_name} -p ${mapped_port}:22 --privileged=true \
-               -v ${agent_dir}:/home/jenkins/workspace ${agent_image}
-    waitCmdDone  docker ps|grep ${agent_name}
+               -v ${agent_dir}:/home/jenkins/workspace ${agent_image} 1>&2 2>/dev/null
+    waitCmdDone  docker ps|grep ${agent_name} 1>/dev/null
     return $?
 }
 

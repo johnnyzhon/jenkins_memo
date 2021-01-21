@@ -10,6 +10,7 @@ agent_image=jenkins_slave
 agent_dir="/home/telecom/agent/${agent_name}"
 agent_num=${1:-1}
 
+set +e
 for index in `seq 1 $agent_num`
 do
     writelog "# Create the ${index}th container."
@@ -40,3 +41,4 @@ do
     configContainerVethNIC $pid ${veth_pair[1]} $eth1_cidr
     if [ $? -ne 0 ];then exit 1;fi
 done
+set -e
