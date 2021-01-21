@@ -1,13 +1,45 @@
-测试机网络规划方案1（ovs)：
+环境：
+1. 宿主机为centos;
+2. 宿主机安装了ovs，pipework；
+3. 宿主机有2个网口（eth0 有ip地址，和外部网络相通，eth1连接猫墙交换机）
+
+
+测试机网络规划方案（ovs)：
 
 1.  测试机以容器的形式部署在一台或多台服务器上。
-2.  测试机端口接入 ovs switch
-3.  ovs上给测试机划分不同的vlan, 测试机ip网段 192.168.1.*
-4.  宿主机eth0端口接入ovs， 注意接入后eth0 ip会失效，请在服务器本地登录，并记录下当前的route表
-5.  然后把 eth0的ip地址配给 ovs internal port 
-6.  然后给ovs internal port配置 eth0上面的路由
+2.  测试机添加第二个网口，并将第二个网口接入 ovs switch
+3.  ovs上给测试机划分不同的vlan, 测试机第二个网口ip网段 192.168.1.*
+4.  宿主机eth1端口接入ovs， 注意接入后eth1 ip会失效，请在服务器本地登录，并记录下当前的route表
+5.  然后把 eth1的ip地址配给 ovs internal port 
+6.  然后给ovs internal port配置 eth1上面的路由 
+7.  测试机缺省的第一个网口通过端口映射方式可以访问外部网络。
 
+详细步骤：
+1. 获取容器的PID
+# docker inspect -f '{{.State.Pid}}' ${agent_name}  
+2. 为容器添加网络接口eth1
+(1) 创建一对 veth peer设备	
+# ip link add $veth0 type veth peer name $veth1  \\删除命令ip link del veth0
+(2) 创建ovs网桥ovs0
+# ovs-vsctl add-br $ovsbr 
+# ovs−vsctl set bridge $ovsbr stp_enable=true \\避免广播风暴
+# ip link set ovs0 up
+(3) 将veth一端添加到网桥
+# ovs-vsctl add-port $ovs $veth0
+# ip link set $veth0 up
+(4) 将veth另一端与容器关联 
+# ln -s /proc/$pid/ns/net /var/run/netns/$pid
+# ip link set $veth1 netns $pid
+(5) 配置容器新添加的网络接口
+# ip netns exec $pid ip link set dev $veth1 name eth1
+# ip netns exec $pid ip addr add $eth1_ip/$netmask dev eth1
+# ip netns exec $pid ip link set eth1 up
 
+3. 为容器网口设置vlan
+# ovs-vsctl set port $veth0 tag=20
+
+4. 宿主机网口eth1桥接到ovs0 
+# ovs-vsctl add-port $ovsbr eth1
 
 Q&A:
 1. linux上给网口新增/删除 ip？
