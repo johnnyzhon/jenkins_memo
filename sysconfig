@@ -1,0 +1,15 @@
+1. 配置master节点本身：
+
+执行器数量、标签和jenkins url;
+
+2. 全局属性：
+1)  设置缺省git 工具path;
+2)  其他环境变量；
+
+3. SCM 库设置；
+1) gitlab 连接url 和 credential  \\用于jenkins 反馈信息给gitlab
+
+4. git global config设置
+1) username \ email
+
+5. credential 管理
