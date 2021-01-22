@@ -6,10 +6,16 @@
 1)  设置缺省git 工具path;
 2)  其他环境变量；
 
-3. SCM 库设置；
-1) gitlab 连接url 和 credential  \\用于jenkins 反馈信息给gitlab
+3. gitlab配置(用于jenkins 反馈信息给gitlab).
+1)生成GitLab站点Access Tokens
+#GitLab → User Settings → Access Tokens → Persion Access Tokens 
+2)jenkins上配置配置GitLab信息
+#Jenkins Home → Manage Jenkins → System Configuration → Configure System → GitLab
+#Connection name里的“test”，需要与测试脚本“Jenkinsfile”里配置gitLabConnection('test')一致。
+#GitLab host URL填写GitLab的首页地址。
+#Credentials选择Gitlab API token，token就是上一个步骤“生成GitLab站点Access Tokens”里生成的token。
 
 4. git global config设置
-1) username \ email
+1) username and email
 
-5. credential 管理
+5. email 设置
