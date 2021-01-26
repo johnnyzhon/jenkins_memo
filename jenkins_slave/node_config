@@ -7,3 +7,10 @@
 # in agent, chmod 700 authorized_keys;
 # in jenkins, choose private key method and attach id_rsa's content in it;
 
+2. config for node?
+
+1. 配置executor数量
+2. 工具路径（比如git)
+3. 环境变量：比如配置node上的路径path,配置后可以在pipeline中用python 命令。
+#path=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/java/jdk/bin
+
